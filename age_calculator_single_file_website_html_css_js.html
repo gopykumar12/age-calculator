@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Age Calculator • Gopy</title>
+  <meta name="description" content="Fast, accurate age calculator with next birthday, total days lived, and more." />
+  <style>
+    :root {
+      --bg: #0b1020;
+      --card: #12172b;
+      --muted: #9aa3b2;
+      --text: #e8edf7;
+      --accent: #7c5cff;
+      --accent-2: #18b2a6;
+      --danger: #ff5370;
+      --ring: #2a2f45;
+    }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, 'Helvetica Neue', Arial, 'Noto Sans', 'Apple Color Emoji', 'Segoe UI Emoji';
+      background: radial-gradient(90rem 90rem at 10% -10%, #1b2141 0%, var(--bg) 40%),
+                  radial-gradient(70rem 70rem at 110% -20%, #142035 0%, transparent 40%),
+                  var(--bg);
+      color: var(--text);
+    }
+    .container { max-width: 980px; margin: 0 auto; padding: 2rem 1rem 4rem; }
+    header { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+    .brand { display: flex; align-items: center; gap: .75rem; font-weight: 700; letter-spacing: .3px; }
+    .brand .logo { width: 36px; height: 36px; border-radius: 10px; background: linear-gradient(135deg, var(--accent), var(--accent-2)); box-shadow: 0 10px 30px rgba(124,92,255,.35); display: grid; place-items: center; font-size: 18px; }
+    .headline { margin: 1.5rem 0 .5rem; font-size: clamp(1.6rem, 3.5vw, 2.2rem); }
+    .sub { margin: 0 0 1.5rem; color: var(--muted); }
+
+    .grid { display: grid; grid-template-columns: 1.1fr .9fr; gap: 1rem; }
+    @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+
+    .card { background: linear-gradient(180deg, #151a31, #0f1430); border: 1px solid var(--ring); border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,.25); padding: 1rem; }
+    .card h2 { margin: .25rem 0 1rem; font-size: 1.15rem; letter-spacing: .2px; }
+
+    .form { display: grid; gap: .9rem; }
+    label { display: grid; gap: .35rem; font-size: .95rem; color: #cfd5e6; }
+    input[type="date"], input[type="time"] { background: #0d1228; border: 1px solid var(--ring); color: var(--text); padding: .8rem .9rem; border-radius: 12px; outline: none; }
+    input[type="date"]:focus, input[type="time"]:focus { border-color: var(--accent); box-shadow: 0 0 0 4px rgba(124,92,255,.15); }
+
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: .8rem; }
+    @media (max-width: 520px) { .row { grid-template-columns: 1fr; } }
+
+    .actions { display: flex; gap: .6rem; flex-wrap: wrap; margin-top: .5rem; }
+    button { border: 0; padding: .85rem 1rem; border-radius: 12px; font-weight: 600; cursor: pointer; }
+    .primary { background: linear-gradient(135deg, var(--accent), #6d86ff); color: white; }
+    .ghost { background: transparent; border: 1px solid var(--ring); color: var(--text); }
+    .danger { background: linear-gradient(135deg, #ff6b6b, #ff5370); color: white; }
+
+    .result { display: grid; grid-template-columns: repeat(3, 1fr); gap: .7rem; }
+    @media (max-width: 900px) { .result { grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 520px) { .result { grid-template-columns: 1fr; } }
+
+    .stat { background: #0d1228; border: 1px solid var(--ring); border-radius: 14px; padding: .9rem; }
+    .stat h3 { margin: 0 0 .25rem; font-size: .95rem; color: #cbd3e4; font-weight: 600; }
+    .stat p { margin: 0; font-size: 1.2rem; font-weight: 700; letter-spacing: .3px; }
+    .muted { color: var(--muted); font-size: .9rem; }
+
+    .error { display:none; margin-top: .6rem; color: #ffd1d6; background: rgba(255,83,112,.1); border: 1px solid rgba(255,83,112,.3); padding: .7rem .9rem; border-radius: 12px; }
+
+    footer { margin-top: 2rem; color: var(--muted); font-size: .9rem; text-align: center; }
+    .copy { user-select: all; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="brand">
+        <div class="logo">⏳</div>
+        <div>Age Calculator</div>
+      </div>
+    </header>
+
+    <h1 class="headline">Instant Age Calculator</h1>
+    <p class="sub">DOB daaliye aur turant accurate age, next birthday aur total days lived paaiye.</p>
+
+    <div class="grid">
+      <section class="card">
+        <h2>Enter Details</h2>
+        <form id="ageForm" class="form" autocomplete="off">
+          <label>
+            Date of Birth
+            <input type="date" id="dob" required />
+          </label>
+          <div class="row">
+            <label>
+              Time (optional)
+              <input type="time" id="tob" />
+            </label>
+            <label>
+              Calculation As Of
+              <input type="date" id="asof" />
+            </label>
+          </div>
+          <div class="actions">
+            <button type="submit" class="primary">Calculate</button>
+            <button type="button" id="resetBtn" class="ghost">Reset</button>
+            <button type="button" id="copyBtn" class="ghost">Copy Result</button>
+          </div>
+          <div id="error" class="error">Please enter a valid date of birth (not in the future).</div>
+        </form>
+      </section>
+
+      <section class="card">
+        <h2>Result</h2>
+        <div class="result">
+          <div class="stat">
+            <h3>Exact Age</h3>
+            <p id="exactAge">—</p>
+            <div class="muted" id="exactAgeDetail">Years • Months • Days</div>
+          </div>
+          <div class="stat">
+            <h3>Total Lived</h3>
+            <p id="totalDays">—</p>
+            <div class="muted" id="totalMore">Days • Hours • Minutes</div>
+          </div>
+          <div class="stat">
+            <h3>Next Birthday</h3>
+            <p id="nextBday">—</p>
+            <div class="muted" id="nextBdayDetail">—</div>
+          </div>
+          <div class="stat">
+            <h3>Weekday Born</h3>
+            <p id="weekday">—</p>
+            <div class="muted">—</div>
+          </div>
+          <div class="stat">
+            <h3>Western Zodiac</h3>
+            <p id="zodiac">—</p>
+            <div class="muted">Sun sign</div>
+          </div>
+          <div class="stat">
+            <h3>Age Summary</h3>
+            <p id="summary" class="copy">—</p>
+            <div class="muted">Tap to select text</div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <footer>
+      Made with ❤ for Gopy • Works fully offline
+    </footer>
+  </div>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+
+    function pad(n){ return String(n).padStart(2,'0'); }
+
+    function getZodiac(month, day) {
+      // month: 0-11
+      const z = [
+        { sign: 'Capricorn', from: [0, 1] , to: [0, 19] },
+        { sign: 'Aquarius',  from: [0,20] , to: [1, 18] },
+        { sign: 'Pisces',    from: [1,19] , to: [2, 20] },
+        { sign: 'Aries',     from: [2,21] , to: [3, 19] },
+        { sign: 'Taurus',    from: [3,20] , to: [4, 20] },
+        { sign: 'Gemini',    from: [4,21] , to: [5, 20] },
+        { sign: 'Cancer',    from: [5,21] , to: [6, 22] },
+        { sign: 'Leo',       from: [6,23] , to: [7, 22] },
+        { sign: 'Virgo',     from: [7,23] , to: [8, 22] },
+        { sign: 'Libra',     from: [8,23] , to: [9, 22] },
+        { sign: 'Scorpio',   from: [9,23] , to: [10,21] },
+        { sign: 'Sagittarius',from:[10,22] , to: [11,21] },
+        { sign: 'Capricorn', from:[11,22] , to: [11,31] },
+      ];
+      for (const s of z) {
+        const [fm, fd] = s.from, [tm, td] = s.to;
+        if (
+          (month === fm && day >= fd) ||
+          (month === tm && day <= td) ||
+          (month > fm && month < tm) ||
+          (fm > tm && (month > fm || month < tm))
+        ) return s.sign;
+      }
+      return '—';
+    }
+
+    function diffYMD(from, to) {
+      // returns {years, months, days} between two dates (date-only)
+      let years = to.getFullYear() - from.getFullYear();
+      let months = to.getMonth() - from.getMonth();
+      let days = to.getDate() - from.getDate();
+
+      if (days < 0) {
+        const prevMonth = new Date(to.getFullYear(), to.getMonth(), 0);
+        days += prevMonth.getDate();
+        months--;
+      }
+      if (months < 0) {
+        months += 12;
+        years--;
+      }
+      return { years, months, days };
+    }
+
+    function startOfDay(d){ return new Date(d.getFullYear(), d.getMonth(), d.getDate()); }
+
+    function formatDate(d){
+      return `${pad(d.getDate())}-${pad(d.getMonth()+1)}-${d.getFullYear()}`;
+    }
+
+    $('ageForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      $('error').style.display = 'none';
+
+      const dobVal = $('dob').value;
+      if (!dobVal) return;
+
+      const timeVal = $('tob').value;
+      const asOfVal = $('asof').value;
+
+      let dob = new Date(dobVal + 'T' + (timeVal ? timeVal : '12:00'));
+      let now = asOfVal ? new Date(asOfVal + 'T12:00') : new Date();
+
+      if (dob > now) { $('error').style.display = 'block'; return; }
+
+      // Exact Y-M-D
+      const ymd = diffYMD(new Date(dob.getFullYear(), dob.getMonth(), dob.getDate()), new Date(now.getFullYear(), now.getMonth(), now.getDate()));
+      $('exactAge').textContent = `${ymd.years}y ${ymd.months}m ${ymd.days}d`;
+      $('exactAgeDetail').textContent = `${ymd.years} Years • ${ymd.months} Months • ${ymd.days} Days`;
+
+      // Totals
+      const ms = now - dob;
+      const days = Math.floor(ms / 86400000);
+      const hours = Math.floor(ms / 3600000);
+      const minutes = Math.floor(ms / 60000);
+      $('totalDays').textContent = `${days.toLocaleString()} days`;
+      $('totalMore').textContent = `${hours.toLocaleString()} hours • ${minutes.toLocaleString()} minutes`;
+
+      // Next birthday
+      let nb = new Date(now.getFullYear(), dob.getMonth(), dob.getDate());
+      const todayStart = startOfDay(now).getTime();
+      if (startOfDay(nb).getTime() <= todayStart) nb = new Date(now.getFullYear()+1, dob.getMonth(), dob.getDate());
+      const daysToNB = Math.ceil((startOfDay(nb) - todayStart) / 86400000);
+      const weekdayNB = nb.toLocaleDateString(undefined, { weekday: 'long' });
+      $('nextBday').textContent = `${daysToNB} days`;
+      $('nextBdayDetail').textContent = `${weekdayNB}, ${formatDate(nb)}`;
+
+      // Weekday born & Zodiac
+      const weekdayBorn = new Date(dob.getFullYear(), dob.getMonth(), dob.getDate()).toLocaleDateString(undefined, { weekday: 'long' });
+      $('weekday').textContent = weekdayBorn;
+      $('zodiac').textContent = getZodiac(dob.getMonth(), dob.getDate());
+
+      // Summary
+      $('summary').textContent = `DOB: ${formatDate(dob)} | Age: ${ymd.years}y ${ymd.months}m ${ymd.days}d | Next Birthday in ${daysToNB} days (${weekdayNB})`;
+    });
+
+    $('resetBtn').addEventListener('click', () => {
+      $('ageForm').reset();
+      ['exactAge','exactAgeDetail','totalDays','totalMore','nextBday','nextBdayDetail','weekday','zodiac','summary'].forEach(id => $(id).textContent = '—');
+      $('error').style.display = 'none';
+    });
+
+    $('copyBtn').addEventListener('click', async () => {
+      const text = $('summary').textContent;
+      try {
+        await navigator.clipboard.writeText(text);
+        const prev = $('copyBtn').textContent;
+        $('copyBtn').textContent = 'Copied!';
+        setTimeout(()=> $('copyBtn').textContent = prev, 1200);
+      } catch(e) {
+        alert('Copy failed. Tap the summary to select, then press Ctrl+C.');
+      }
+    });
+
+    // Prefill as-of date with today
+    (function(){
+      const t = new Date();
+      $('asof').value = `${t.getFullYear()}-${pad(t.getMonth()+1)}-${pad(t.getDate())}`;
+    })();
+  </script>
+</body>
+</html>
